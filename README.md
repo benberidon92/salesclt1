@@ -1,0 +1,138 @@
+import React, { useState, useEffect } from "react";
+
+const scenarios = [
+  {
+    id: 1,
+    title: "Cracked Front Window",
+    issues: [
+      "Our big front window cracked during the storm.",
+      "The front living room window is split right across the middle.",
+      "We taped the front window up, but it looks terrible from the street."
+    ],
+    objections: {
+      easy: ["We just want it fixed soon, what’s the cost?"],
+      moderate: ["That sounds expensive… maybe we’ll wait a bit."],
+      difficult: [
+        "I don’t know if we can afford this right now.",
+        "Honestly, we might just live with it—it’s not urgent.",
+        "I’m worried you’ll tear up the living room if you replace it."
+      ]
+    },
+    assumptiveClose: "Let’s get this scheduled—do mornings or afternoons work better?"
+  },
+  // ... other scenarios
+];
+
+export default function GlassDoctorTrainer() {
+  const [transcript, setTranscript] = useState([]);
+  const [input, setInput] = useState("");
+  const [scenario, setScenario] = useState(scenarios[0]);
+  const [difficulty, setDifficulty] = useState("easy");
+  const [started, setStarted] = useState(false);
+
+  // Start roleplay with greeting
+  const startRoleplay = () => {
+    setTranscript([{ role: "customer", text: "Hello, how are you today? What would you like help with today?" }]);
+    setStarted(true);
+  };
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+
+    const newTranscript = [...transcript, { role: "rep", text: input.trim() }];
+    let botReply = "";
+
+    if (input.toLowerCase().includes("financ")) {
+      botReply = "Hmm… monthly payments could help. Can you explain how that works?";
+    } else if (input.toLowerCase().includes("schedule")) {
+      botReply = "Okay, I might be ready—what day works?";
+    } else {
+      const objections = scenario.objections[difficulty];
+      botReply = objections[Math.floor(Math.random() * objections.length)];
+    }
+
+    setTranscript([...newTranscript, { role: "customer", text: botReply }]);
+    setInput("");
+  };
+
+  return (
+    <div className="max-w-xl mx-auto p-4">
+      <h1 className="text-xl font-bold mb-3">Glass Doctor Roleplay Trainer</h1>
+
+      {/* Scenario selector */}
+      <div className="mb-2">
+        <label className="block text-sm mb-1">Choose Scenario</label>
+        <select
+          value={scenario.id}
+          onChange={(e) =>
+            setScenario(scenarios.find((s) => s.id === Number(e.target.value)))
+          }
+          className="border rounded p-2 w-full"
+        >
+          {scenarios.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Difficulty selector */}
+      <div className="mb-4">
+        <label className="block text-sm mb-1">Select Difficulty</label>
+        <select
+          value={difficulty}
+          onChange={(e) => setDifficulty(e.target.value)}
+          className="border rounded p-2 w-full"
+        >
+          <option value="easy">Easy</option>
+          <option value="moderate">Moderate</option>
+          <option value="difficult">Difficult</option>
+        </select>
+      </div>
+
+      {/* Start button */}
+      {!started ? (
+        <button
+          onClick={startRoleplay}
+          className="bg-green-600 text-white px-4 py-2 rounded mb-4"
+        >
+          Begin Roleplay
+        </button>
+      ) : null}
+
+      {/* Chat */}
+      <div className="border rounded p-3 h-80 overflow-y-auto bg-gray-50 mb-4">
+        {transcript.map((m, idx) => (
+          <div
+            key={idx}
+            className={`mb-2 ${m.role === "rep" ? "text-blue-600 text-right" : "text-gray-800"}`}
+          >
+            <b>{m.role === "rep" ? "You" : "Customer"}:</b> {m.text}
+          </div>
+        ))}
+      </div>
+
+      {/* Input */}
+      {started && (
+        <div className="flex gap-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your response..."
+            className="flex-1 border rounded p-2"
+          />
+          <button
+            onClick={handleSend}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Send
+          </button>
+        </div>
+      )}
+
+      <div className="text-xs text-gray-500 mt-3">
+        💡 Tip: Use the C.U.S.T.O.M.E.R. model. Try assumptive closes and soft financing.
+      </div>
+    </div>
+  );
